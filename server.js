@@ -543,7 +543,6 @@ app.get("/api/content", userOnly, async (req, res) => {
 /* =========================
    AD START
 ========================= */
-
 app.post(
   "/api/tasks/:id/start-ad",
   userOnly,
@@ -579,6 +578,28 @@ app.post(
     if (claimed.rowCount) {
       return res.status(400).json({
         error: "এই Ad-এর reward আগে নেওয়া হয়েছে"
+      });
+    }
+
+    const active = await q(
+      `SELECT token
+       FROM ad_sessions
+       WHERE user_id=$1
+       AND task_id=$2
+       AND completed=false
+       ORDER BY id DESC
+       LIMIT 1`,
+      [
+        req.session.userId,
+        taskId
+      ]
+    );
+
+    if (active.rowCount) {
+      return res.json({
+        url: t.rows[0].url,
+        seconds: Number(t.rows[0].min_seconds),
+        token: active.rows[0].token
       });
     }
 
