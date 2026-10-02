@@ -1,1971 +1,1283 @@
 <!doctype html>
 <html lang="bn">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>বেকার থাকার দিন শেষ</title>
-
-  <style>
-    *{box-sizing:border-box}
-
-    body{
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:#f3f5f7;
-      color:#17202a
-    }
-
-    header{
-      background:#111827;
-      color:white;
-      padding:14px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      position:sticky;
-      top:0;
-      z-index:10
-    }
-
-    header b{
-      font-size:18px
-    }
-
-    main{
-      max-width:900px;
-      margin:auto;
-      padding:15px
-    }
-
-    .card{
-      background:white;
-      padding:17px;
-      border-radius:14px;
-      margin:12px 0;
-      box-shadow:0 2px 10px #0001
-    }
-
-    input,textarea,select,button{
-      width:100%;
-      padding:12px;
-      margin:6px 0;
-      border-radius:8px;
-      border:1px solid #ccd3db;
-      font-size:15px
-    }
-
-    button{
-      background:#111827;
-      color:white;
-      border:0;
-      cursor:pointer
-    }
-
-    button.red{
-      background:#dc2626
-    }
-
-    button.green{
-      background:#15803d
-    }
-
-    button.gray{
-      background:#6b7280
-    }
-
-    .balance{
-      font-size:30px;
-      font-weight:bold
-    }
-
-    .task{
-      border:1px solid #e5e7eb;
-      padding:13px;
-      border-radius:12px;
-      margin:10px 0
-    }
-
-    .task h3{
-      margin:0 0 7px
-    }
-
-    .tag{
-      display:inline-block;
-      padding:4px 8px;
-      border-radius:20px;
-      background:#e5e7eb;
-      font-size:12px
-    }
-
-    .pending{
-      color:#b45309;
-      font-weight:bold
-    }
-
-    .approved{
-      color:#15803d;
-      font-weight:bold
-    }
-
-    .rejected{
-      color:#dc2626;
-      font-weight:bold
-    }
-
-    .shot{
-      max-width:100%;
-      border-radius:10px;
-      margin:5px 0;
-      border:1px solid #ddd
-    }
-
-    .hidden{
-      display:none
-    }
-
-    .topHome{
-      width:auto;
-      padding:8px 13px;
-      margin:0
-    }
-
-    .small{
-      font-size:13px;
-      color:#6b7280
-    }
-
-    .adminBox{
-      border:1px solid #ddd;
-      padding:12px;
-      border-radius:12px;
-      margin:10px 0
-    }
-
-    .reference{
-      max-width:100%;
-      max-height:300px;
-      display:block;
-      margin:8px auto;
-      border-radius:10px
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>বেকার থাকার দিন শেষ</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f5f7;color:#17202a}
+header{background:#111827;color:#fff;padding:14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+header b{font-size:18px}
+main{max-width:900px;margin:auto;padding:15px}
+.card{background:#fff;padding:17px;border-radius:14px;margin:12px 0;box-shadow:0 2px 10px #0001}
+input,textarea,select,button{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #ccd3db;font-size:15px}
+button{background:#111827;color:#fff;border:0;cursor:pointer}
+.green{background:#15803d}.red{background:#dc2626}.gray{background:#6b7280}
+.balance{font-size:30px;font-weight:bold}
+.task,.adminBox{border:1px solid #e5e7eb;padding:13px;border-radius:12px;margin:10px 0}
+.tag{display:inline-block;padding:4px 8px;border-radius:20px;background:#e5e7eb;font-size:12px}
+.pending{color:#b45309;font-weight:bold}
+.approved{color:#15803d;font-weight:bold}
+.rejected{color:#dc2626;font-weight:bold}
+.shot,.reference{max-width:100%;border-radius:10px;margin:5px 0;border:1px solid #ddd}
+.reference{max-height:300px;display:block;margin:8px auto}
+.hidden{display:none}
+.topHome{width:auto;padding:8px 13px;margin:0}
+.small{font-size:13px;color:#6b7280}
+.tabs{display:flex;gap:5px;overflow:auto;margin:10px 0}
+.tabs button{white-space:nowrap;width:auto;flex:1}
+.tabActive{background:#15803d}
+.chat{max-height:430px;overflow:auto;border:1px solid #ddd;border-radius:10px;padding:10px}
+.msg{padding:9px;border-radius:10px;margin:7px 0;max-width:85%}
+.msg.user{background:#e5e7eb;margin-left:auto}
+.msg.admin{background:#dcfce7}
+.copybox{background:#f3f4f6;padding:10px;border-radius:8px;word-break:break-all}
+</style>
 </head>
 
 <body>
-
 <header>
-  <b>বেকার থাকার দিন শেষ</b>
-  <button class="topHome" onclick="home()">Home</button>
+<b>বেকার থাকার দিন শেষ</b>
+<button class="topHome" onclick="home()">Home</button>
 </header>
 
 <main id="app"></main>
 
 <script>
+const app=document.getElementById("app");
 
-const app = document.getElementById("app");
-
-const api = async (url, options = {}) => {
-
-  const response = await fetch(url,{
-    credentials:"same-origin",
-    headers:{
-      "Content-Type":"application/json",
-      ...(options.headers || {})
-    },
-    ...options
-  });
-
-  const data = await response.json().catch(()=>({}));
-
-  if(!response.ok){
-    throw new Error(data.error || "সমস্যা হয়েছে");
-  }
-
-  return data;
+const api=async(url,options={})=>{
+ const r=await fetch(url,{
+  credentials:"same-origin",
+  headers:{"Content-Type":"application/json",...(options.headers||{})},
+  ...options
+ });
+ const d=await r.json().catch(()=>({}));
+ if(!r.ok) throw new Error(d.error||"সমস্যা হয়েছে");
+ return d;
 };
 
+const esc=v=>String(v??"")
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
 
-/* =========================
-   HOME
-========================= */
+const safeUrl=v=>/^https?:\/\//i.test(String(v||""))
+?String(v).replaceAll("'","%27").replaceAll('"',"%22")
+:"#";
+
+const safeImage=v=>String(v||"").startsWith("data:image/")?v:"";
+const money=n=>"৳"+Number(n||0).toFixed(2);
+
+function taskTypeName(t){
+ return t==="ad"?"Ad দেখা":t==="facebook"?"Facebook Like":"YouTube";
+}
+
+function statusBn(s){
+ return s==="pending"?"Pending":s==="approved"?"Approved":"Rejected";
+}
 
 async function home(){
+ try{
+  const d=await api("/api/content");
+  const u=d.user;
 
-  try{
+  app.innerHTML=`
+  <div class="card">
+   <h2>স্বাগতম 👋</h2>
+   <div class="balance">${money(u.balance)}</div>
+   <p>Account: <b>${esc(u.login)}</b></p>
+   <p>Referral Code: <b>${esc(u.referral_code)}</b></p>
 
-    const data = await api("/api/me");
+   <div class="copybox">
+   ${esc(location.origin+location.pathname+"?ref="+u.referral_code)}
+   </div>
 
-    app.innerHTML = `
+   <button onclick="copyReferral()">🔗 Referral Link কপি করুন</button>
+  </div>
 
-      <div class="card">
-
-        <h2>স্বাগতম 👋</h2>
-
-        <div class="balance">
-          ৳${Number(data.user.balance).toFixed(2)}
-        </div>
-
-        <p>
-          Referral Code:
-          <b>${escapeHtml(data.user.referral_code)}</b>
-        </p>
-
-      </div>
-
-      <div class="card">
-
-        <button onclick="showTasks()">
-          💰 কাজ করে টাকা আয়
-        </button>
-
-        <button onclick="withdrawPage()">
-          💳 Withdraw
-        </button>
-
-        <button onclick="mySubmissions()">
-          📋 আমার কাজ
-        </button>
-
-        <button class="gray" onclick="logout()">
-          Logout
-        </button>
-
-        <button class="gray" onclick="adminLogin()">
-          Admin
-        </button>
-
-      </div>
-    `;
-
-  }catch(e){
-
-    loginPage();
-
-  }
-
+  <div class="card">
+   <button onclick="showTasks()">💰 কাজ করুন</button>
+   <button onclick="withdrawPage()">💳 Withdraw</button>
+   <button onclick="mySubmissions()">📋 আমার কাজ</button>
+   <button onclick="profilePage()">👤 Profile</button>
+   <button onclick="messagesPage()">💬 Admin-এর সাথে কথা বলুন ${d.unreadMessages?`(${d.unreadMessages})`:""}</button>
+   <button class="gray" onclick="logout()">Logout</button>
+   <button class="gray" onclick="adminLogin()">Admin</button>
+  </div>`;
+ }catch{
+  loginPage();
+ }
 }
 
-
-/* =========================
-   LOGIN
-========================= */
+async function copyReferral(){
+ try{
+  const d=await api("/api/me");
+  const link=location.origin+location.pathname+"?ref="+d.user.referral_code;
+  await navigator.clipboard.writeText(link);
+  alert("Referral Link কপি হয়েছে");
+ }catch{
+  alert("Link কপি করা যায়নি");
+ }
+}
 
 function loginPage(){
-
-  app.innerHTML = `
-
-    <div class="card">
-
-      <h2>লগইন</h2>
-
-      <input
-        id="loginInput"
-        placeholder="ফোন নম্বর / Gmail"
-        autocomplete="username"
-      >
-
-      <input
-        id="loginPassword"
-        type="password"
-        placeholder="পাসওয়ার্ড"
-        autocomplete="current-password"
-      >
-
-      <button onclick="doLogin()">
-        লগইন
-      </button>
-
-      <p>
-        নতুন account?
-        <a href="#" onclick="registerPage();return false">
-          রেজিস্টার
-        </a>
-      </p>
-
-      <div id="loginMsg"></div>
-
-    </div>
-  `;
+ app.innerHTML=`
+ <div class="card">
+  <h2>লগইন</h2>
+  <input id="loginInput" placeholder="ফোন নম্বর / Gmail">
+  <input id="loginPassword" type="password" placeholder="পাসওয়ার্ড">
+  <button onclick="doLogin()">লগইন</button>
+  <p>নতুন account?
+  <a href="#" onclick="registerPage();return false">রেজিস্টার</a></p>
+  <div id="loginMsg"></div>
+ </div>`;
 }
-
 
 async function doLogin(){
-
-  try{
-
-    await api("/api/login",{
-      method:"POST",
-      body:JSON.stringify({
-        login:document.getElementById("loginInput").value,
-        password:document.getElementById("loginPassword").value
-      })
-    });
-
-    home();
-
-  }catch(e){
-
-    document.getElementById("loginMsg").textContent = e.message;
-
-  }
-
+ try{
+  await api("/api/login",{
+   method:"POST",
+   body:JSON.stringify({
+    login:loginInput.value,
+    password:loginPassword.value
+   })
+  });
+  home();
+ }catch(e){
+  loginMsg.textContent=e.message;
+ }
 }
-
-
-/* =========================
-   REGISTER
-========================= */
 
 function registerPage(){
+ const ref=new URLSearchParams(location.search).get("ref")||"";
 
-  const ref =
-    new URLSearchParams(location.search).get("ref") || "";
+ app.innerHTML=`
+ <div class="card">
+  <h2>নতুন Account</h2>
+  <input id="registerLogin" placeholder="ফোন নম্বর / Gmail">
+  <input id="registerPassword" type="password" placeholder="পাসওয়ার্ড">
+  <input id="registerConfirm" type="password" placeholder="পাসওয়ার্ড আবার">
+  <input id="registerRef" value="${esc(ref)}" placeholder="Referral Code">
+  <button onclick="doRegister()">Account তৈরি করুন</button>
 
-  app.innerHTML = `
+  <p>আগে account আছে?
+  <a href="#" onclick="loginPage();return false">লগইন</a></p>
 
-    <div class="card">
-
-      <h2>নতুন Account তৈরি করুন</h2>
-
-      <input
-        id="registerLogin"
-        placeholder="ফোন নম্বর / Gmail"
-      >
-
-      <input
-        id="registerPassword"
-        type="password"
-        placeholder="পাসওয়ার্ড"
-      >
-
-      <input
-        id="registerConfirm"
-        type="password"
-        placeholder="পাসওয়ার্ড আবার লিখুন"
-      >
-
-      <input
-        id="registerRef"
-        value="${escapeHtml(ref)}"
-        placeholder="Referral Code"
-      >
-
-      <button onclick="doRegister()">
-        Account তৈরি করুন
-      </button>
-
-      <p>
-        আগে account আছে?
-        <a href="#" onclick="loginPage();return false">
-          লগইন
-        </a>
-      </p>
-
-      <div id="registerMsg"></div>
-
-    </div>
-  `;
+  <div id="registerMsg"></div>
+ </div>`;
 }
-
 
 async function doRegister(){
-
-  try{
-
-    await api("/api/register",{
-      method:"POST",
-      body:JSON.stringify({
-
-        login:document.getElementById("registerLogin").value,
-
-        password:
-          document.getElementById("registerPassword").value,
-
-        confirmPassword:
-          document.getElementById("registerConfirm").value,
-
-        referralCode:
-          document.getElementById("registerRef").value
-
-      })
-    });
-
-    home();
-
-  }catch(e){
-
-    document.getElementById("registerMsg").textContent =
-      e.message;
-
-  }
-
+ try{
+  await api("/api/register",{
+   method:"POST",
+   body:JSON.stringify({
+    login:registerLogin.value,
+    password:registerPassword.value,
+    confirmPassword:registerConfirm.value,
+    referralCode:registerRef.value
+   })
+  });
+  home();
+ }catch(e){
+  registerMsg.textContent=e.message;
+ }
 }
-
-
-/* =========================
-   TASK LIST
-========================= */
 
 async function showTasks(){
+ try{
+  const d=await api("/api/content");
 
-  try{
+  let h=`<div class="card"><h2>আজকের কাজ</h2>`;
 
-    const data = await api("/api/content");
+  if(!d.tasks.length)
+   h+=`<p>এখন কোনো কাজ নেই।</p>`;
 
-    let html = `
+  for(const t of d.tasks){
 
-      <div class="card">
+   const s=d.submissions.find(
+    x=>Number(x.task_id)===Number(t.id)
+   );
 
-        <h2>আজকের কাজ</h2>
+   h+=`
+   <div class="task">
+    <span class="tag">${taskTypeName(t.type)}</span>
+    <h3>${esc(t.title)}</h3>
+    <p>${esc(t.description||"")}</p>
+    <p>Reward: <b>${money(t.reward)}</b></p>
 
-        <p class="small">
-          কাজ করার আগে Admin দেওয়া নির্দেশনা ভালোভাবে দেখুন।
-        </p>
-
-      </div>
-    `;
-
-    if(!data.tasks.length){
-
-      html += `
-        <div class="card">
-          <p>এখন কোনো কাজ নেই।</p>
-        </div>
-      `;
-
+    ${
+     s
+     ? `<p class="${s.status}">${statusBn(s.status)}</p>`
+     : t.type==="ad"
+     ? `<button onclick="startAd(${t.id})">▶️ Ad দেখুন</button>`
+     : `<button onclick="openTask(${t.id})">কাজ করুন</button>`
     }
-
-    for(const task of data.tasks){
-
-      const submission =
-        data.submissions.find(
-          s => Number(s.task_id) === Number(task.id)
-        );
-
-      let status = "";
-
-      if(submission){
-
-        if(submission.status === "pending"){
-          status =
-            `<p class="pending">⏳ Pending — Admin যাচাই করছে</p>`;
-        }
-
-        if(submission.status === "approved"){
-          status =
-            `<p class="approved">✅ Approved — Reward দেওয়া হয়েছে</p>`;
-        }
-
-        if(submission.status === "rejected"){
-          status =
-            `<p class="rejected">❌ Rejected</p>`;
-        }
-
-      }
-
-      let button = "";
-
-      if(task.type === "ad"){
-
-        button = `
-          <button onclick="startAd(${task.id})">
-            ▶️ Ad দেখুন
-          </button>
-        `;
-
-      }else{
-
-        if(submission){
-
-          button = "";
-
-        }else{
-
-          button = `
-            <button onclick="openTask(${task.id})">
-              কাজ করুন
-            </button>
-          `;
-
-        }
-
-      }
-
-      html += `
-
-        <div class="card task">
-
-          <span class="tag">
-            ${taskTypeName(task.type)}
-          </span>
-
-          <h3>
-            ${escapeHtml(task.title)}
-          </h3>
-
-          ${
-            task.description
-            ? `<p>${escapeHtml(task.description)}</p>`
-            : ""
-          }
-
-          <p>
-            Reward:
-            <b>৳${Number(task.reward).toFixed(2)}</b>
-          </p>
-
-          ${status}
-
-          ${button}
-
-        </div>
-      `;
-    }
-
-    html += `
-      <button class="gray" onclick="home()">
-        ← Home
-      </button>
-    `;
-
-    app.innerHTML = html;
-
-  }catch(e){
-
-    alert(e.message);
-    home();
-
+   </div>`;
   }
 
+  h+=`</div>
+  <button class="gray" onclick="home()">← Home</button>`;
+
+  app.innerHTML=h;
+
+ }catch(e){
+  alert(e.message);
+ }
 }
-
-
-function taskTypeName(type){
-
-  if(type === "ad") return "Ad দেখুন";
-
-  if(type === "facebook") return "Facebook Like";
-
-  if(type === "youtube") return "YouTube";
-
-  return "কাজ";
-
-}
-
-
-/* =========================
-   AD
-========================= */
 
 async function startAd(id){
-
-  try{
-
-    const data = await api(
-      "/api/tasks/" + id + "/start-ad",
-      {
-        method:"POST"
-      }
-    );
-
-    let seconds = Number(data.seconds || 15);
-
-    app.innerHTML = `
-
-      <div class="card">
-
-        <h2>Ad দেখুন</h2>
-
-        <p>
-          নিচের Ad-এ ক্লিক করুন এবং পুরো সময় অপেক্ষা করুন।
-        </p>
-
-        <button
-          onclick="window.open('${safeUrl(data.url)}','_blank')"
-        >
-          🔗 Ad খুলুন
-        </button>
-
-        <h3 id="timer">
-          ${seconds} সেকেন্ড বাকি
-        </h3>
-
-        <button
-          id="completeAdButton"
-          disabled
-          onclick="completeAd(${id},'${data.token}')"
-        >
-          ⏳ অপেক্ষা করুন
-        </button>
-
-        <button class="gray" onclick="showTasks()">
-          ← ফিরে যান
-        </button>
-
-      </div>
-    `;
-
-    const timer = setInterval(()=>{
-
-      seconds--;
-
-      const timerElement =
-        document.getElementById("timer");
-
-      if(timerElement){
-
-        timerElement.textContent =
-          seconds > 0
-          ? `${seconds} সেকেন্ড বাকি`
-          : "সময় শেষ";
-
-      }
-
-      if(seconds <= 0){
-
-        clearInterval(timer);
-
-        const button =
-          document.getElementById("completeAdButton");
-
-        if(button){
-
-          button.disabled = false;
-          button.textContent = "✅ Reward নিন";
-
-        }
-
-      }
-
-    },1000);
-
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
-}
-
-
-async function completeAd(id,token){
-
-  try{
-
-    const data = await api(
-      "/api/tasks/" + id + "/complete-ad",
-      {
-        method:"POST",
-        body:JSON.stringify({token})
-      }
-    );
-
-    alert(
-      "অভিনন্দন! ৳" +
-      Number(data.reward).toFixed(2) +
-      " Balance-এ যোগ হয়েছে।"
-    );
-
-    home();
-
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
-}
-
-
-/* =========================
-   FACEBOOK / YOUTUBE TASK
-========================= */
-
-async function openTask(id){
-
-  try{
-
-    const data = await api("/api/content");
-
-    const task =
-      data.tasks.find(t => Number(t.id) === Number(id));
-
-    if(!task){
-
-      alert("কাজ পাওয়া যায়নি");
-      return;
-
-    }
-
-    const four =
-      task.type === "youtube";
-
-    app.innerHTML = `
-
-      <div class="card">
-
-        <span class="tag">
-          ${taskTypeName(task.type)}
-        </span>
-
-        <h2>${escapeHtml(task.title)}</h2>
-
-        ${
-          task.description
-          ? `<p>${escapeHtml(task.description)}</p>`
-          : ""
-        }
-
-        <p>
-          Reward:
-          <b>৳${Number(task.reward).toFixed(2)}</b>
-        </p>
-
-        <h3>Admin-এর দেওয়া Screenshot</h3>
-
-        ${
-          task.reference_image
-          ? `
-            <img
-              class="reference"
-              src="${safeImage(task.reference_image)}"
-            >
-          `
-          : `<p>কোনো Reference Screenshot দেওয়া হয়নি।</p>`
-        }
-
-        <button
-          onclick="window.open('${safeUrl(task.url)}','_blank')"
-        >
-          🔗 ${task.type === "facebook"
-            ? "Facebook পোস্ট খুলুন"
-            : "YouTube ভিডিও খুলুন"}
-        </button>
-
-        <hr>
-
-        <h3>
-          ${
-            four
-            ? "৪টি Screenshot দিন"
-            : "Screenshot দিন"
-          }
-        </h3>
-
-        <p class="small">
-          ${
-            four
-            ? "চারটি Screenshot-ই দিতে হবে।"
-            : "আপনার কাজের প্রমাণের Screenshot দিন।"
-          }
-        </p>
-
-        <input
-          id="shot1"
-          type="file"
-          accept="image/*"
-        >
-
-        ${
-          four
-          ? `
-            <input id="shot2" type="file" accept="image/*">
-            <input id="shot3" type="file" accept="image/*">
-            <input id="shot4" type="file" accept="image/*">
-          `
-          : ""
-        }
-
-        <button
-          onclick="submitTask(${task.id},${four})"
-        >
-          📤 Screenshot জমা দিন
-        </button>
-
-        <button
-          class="gray"
-          onclick="showTasks()"
-        >
-          ← কাজের তালিকায় ফিরে যান
-        </button>
-
-      </div>
-    `;
-
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
-}
-
-
-/* =========================
-   IMAGE TO BASE64
-========================= */
-
-function fileToBase64(file){
-
-  return new Promise((resolve,reject)=>{
-
-    if(!file){
-
-      resolve("");
-
-      return;
-
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () =>
-      resolve(reader.result);
-
-    reader.onerror = reject;
-
-    reader.readAsDataURL(file);
-
+ try{
+  const d=await api("/api/tasks/"+id+"/start-ad",{
+   method:"POST"
   });
 
+  app.innerHTML=`
+  <div class="card">
+   <h2>Ad দেখুন</h2>
+
+   <p>
+   প্রথমে নিচের বাটনে Ad খুলুন।
+   <b>Ad খুলার পরেই সময় গণনা শুরু হবে।</b>
+   </p>
+
+   <button id="openAdBtn"
+   onclick="openAdAndStart('${safeUrl(d.url)}',${d.seconds},${id},'${d.token}')">
+   🔗 Ad খুলুন
+   </button>
+
+   <h3 id="timer">Ad এখনও খোলা হয়নি</h3>
+
+   <button id="completeAdButton" disabled>
+   ⏳ আগে Ad খুলুন
+   </button>
+
+   <button class="gray" onclick="showTasks()">
+   ← ফিরে যান
+   </button>
+  </div>`;
+ }catch(e){
+  alert(e.message);
+ }
 }
 
+function openAdAndStart(url,seconds,id,token){
 
-/* =========================
-   SUBMIT SCREENSHOTS
-========================= */
+ const w=window.open(url,"_blank");
 
-async function submitTask(id,isYoutube){
+ if(!w){
+  alert("Ad খোলার অনুমতি দিন, তারপর আবার চাপুন");
+  return;
+ }
 
-  try{
+ document.getElementById("openAdBtn").disabled=true;
 
-    const s1 =
-      document.getElementById("shot1").files[0];
+ let left=Number(seconds);
+ let timer=document.getElementById("timer");
+ let btn=document.getElementById("completeAdButton");
 
-    const s2 =
-      isYoutube
-      ? document.getElementById("shot2").files[0]
-      : null;
+ timer.textContent=left+" সেকেন্ড বাকি";
 
-    const s3 =
-      isYoutube
-      ? document.getElementById("shot3").files[0]
-      : null;
+ const interval=setInterval(()=>{
 
-    const s4 =
-      isYoutube
-      ? document.getElementById("shot4").files[0]
-      : null;
+  left--;
 
-    if(!s1){
+  timer.textContent=
+  left>0
+  ?left+" সেকেন্ড বাকি"
+  :"সময় শেষ";
 
-      alert("Screenshot দিন");
+  if(left<=0){
 
-      return;
+   clearInterval(interval);
 
-    }
+   btn.disabled=false;
+   btn.textContent="✅ Reward নিন";
 
-    if(
-      isYoutube &&
-      (!s2 || !s3 || !s4)
-    ){
-
-      alert("YouTube কাজের জন্য ৪টি Screenshot দিন");
-
-      return;
-
-    }
-
-    const data = {
-
-      screenshot1:
-        await fileToBase64(s1),
-
-      screenshot2:
-        await fileToBase64(s2),
-
-      screenshot3:
-        await fileToBase64(s3),
-
-      screenshot4:
-        await fileToBase64(s4)
-
-    };
-
-    await api(
-      "/api/tasks/" + id + "/submit",
-      {
-        method:"POST",
-        body:JSON.stringify(data)
-      }
-    );
-
-    alert(
-      "কাজ জমা হয়েছে। Admin যাচাই করার পর Reward দেওয়া হবে।"
-    );
-
-    showTasks();
-
-  }catch(e){
-
-    alert(e.message);
-
+   btn.onclick=()=>completeAd(id,token);
   }
 
+ },1000);
 }
 
+async function completeAd(id,token){
+ try{
+  const d=await api("/api/tasks/"+id+"/complete-ad",{
+   method:"POST",
+   body:JSON.stringify({token})
+  });
 
-/* =========================
-   MY SUBMISSIONS
-========================= */
+  alert("৳"+Number(d.reward).toFixed(2)+" Balance-এ যোগ হয়েছে");
+
+  home();
+
+ }catch(e){
+  alert(e.message);
+ }
+}
+
+async function openTask(id){
+ try{
+  const d=await api("/api/content");
+  const t=d.tasks.find(x=>Number(x.id)===Number(id));
+
+  if(!t)return;
+
+  const y=t.type==="youtube";
+
+  app.innerHTML=`
+  <div class="card">
+
+   <span class="tag">${taskTypeName(t.type)}</span>
+
+   <h2>${esc(t.title)}</h2>
+
+   <p>${esc(t.description||"")}</p>
+
+   <p>Reward: <b>${money(t.reward)}</b></p>
+
+   <h3>Admin-এর Reference Screenshot</h3>
+
+   ${
+    t.reference_image
+    ? `<img class="reference" src="${safeImage(t.reference_image)}">`
+    : "<p>নেই</p>"
+   }
+
+   <button onclick="window.open('${safeUrl(t.url)}','_blank')">
+   🔗 Link খুলুন
+   </button>
+
+   <hr>
+
+   <h3>${y?"৪টি Screenshot":"Screenshot"} দিন</h3>
+
+   <input id="shot1" type="file" accept="image/*">
+
+   ${
+    y
+    ? `
+    <input id="shot2" type="file" accept="image/*">
+    <input id="shot3" type="file" accept="image/*">
+    <input id="shot4" type="file" accept="image/*">
+    `
+    :""
+   }
+
+   <button onclick="submitTask(${t.id},${y})">
+   📤 জমা দিন
+   </button>
+
+   <button class="gray" onclick="showTasks()">
+   ← ফিরে যান
+   </button>
+
+  </div>`;
+
+ }catch(e){
+  alert(e.message);
+ }
+}
+
+function file64(f){
+ return new Promise((res,rej)=>{
+  if(!f)return res("");
+
+  const r=new FileReader();
+
+  r.onload=()=>res(r.result);
+  r.onerror=rej;
+
+  r.readAsDataURL(f);
+ });
+}
+
+async function submitTask(id,y){
+ try{
+
+  const fs=[
+   shot1.files[0],
+   y?shot2.files[0]:null,
+   y?shot3.files[0]:null,
+   y?shot4.files[0]:null
+  ];
+
+  if(fs.some((x,i)=>i===0?!x:y&&!x)){
+   alert(y?"৪টি Screenshot দিন":"Screenshot দিন");
+   return;
+  }
+
+  await api("/api/tasks/"+id+"/submit",{
+   method:"POST",
+   body:JSON.stringify({
+    screenshot1:await file64(fs[0]),
+    screenshot2:await file64(fs[1]),
+    screenshot3:await file64(fs[2]),
+    screenshot4:await file64(fs[3])
+   })
+  });
+
+  alert("Submission Admin-এর কাছে গেছে");
+
+  showTasks();
+
+ }catch(e){
+  alert(e.message);
+ }
+}
+
+function profilePage(){
+
+ api("/api/content").then(d=>{
+
+  const u=d.user;
+
+  app.innerHTML=`
+  <div class="card">
+
+   <h2>👤 Profile</h2>
+
+   <p>Account: <b>${esc(u.login)}</b></p>
+   <p>Referral Code: <b>${esc(u.referral_code)}</b></p>
+   <p>Balance: <b>${money(u.balance)}</b></p>
+   <p>Referral: <b>${d.referralCount} জন</b></p>
+
+   <p>
+   Account তৈরি:
+   ${new Date(u.created_at).toLocaleString("bn-BD")}
+   </p>
+
+   <button onclick="copyReferral()">
+   🔗 Referral Link কপি
+   </button>
+
+   <button onclick="mySubmissions()">
+   📋 কাজের History
+   </button>
+
+   <button onclick="withdrawPage()">
+   💳 Withdraw
+   </button>
+
+   <button class="gray" onclick="home()">
+   ← Home
+   </button>
+
+  </div>`;
+
+ }).catch(e=>alert(e.message));
+}
 
 async function mySubmissions(){
 
-  try{
+ try{
 
-    const data = await api("/api/content");
+  const d=await api("/api/content");
 
-    let html = `
+  app.innerHTML=`
+  <div class="card">
+   <h2>📋 আমার কাজ</h2>
 
-      <div class="card">
+   ${
+    d.submissions.length
+    ?
+    d.submissions.map(s=>`
+    <div class="task">
+     <b>${esc(s.title)}</b>
+     <p class="${s.status}">
+     ${statusBn(s.status)}
+     </p>
+     <p>
+     ${new Date(s.created_at).toLocaleString("bn-BD")}
+     </p>
+    </div>`).join("")
+    :
+    "<p>এখনও কোনো কাজ জমা দাওনি।</p>"
+   }
 
-        <h2>আমার কাজ</h2>
+  </div>
 
-    `;
+  <button class="gray" onclick="home()">
+  ← Home
+  </button>`;
 
-    const list = data.submissions;
-
-    if(!list.length){
-
-      html += `<p>এখনও কোনো কাজ জমা দাওনি।</p>`;
-
-    }else{
-
-      for(const s of list){
-
-        const task =
-          data.tasks.find(
-            t => Number(t.id) === Number(s.task_id)
-          );
-
-        html += `
-
-          <div class="task">
-
-            <b>
-              ${escapeHtml(task?.title || "কাজ")}
-            </b>
-
-            <p>
-              অবস্থা:
-              <span class="${s.status}">
-                ${statusBangla(s.status)}
-              </span>
-            </p>
-
-          </div>
-        `;
-
-      }
-
-    }
-
-    html += `
-
-      </div>
-
-      <button class="gray" onclick="home()">
-        ← Home
-      </button>
-    `;
-
-    app.innerHTML = html;
-
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
+ }catch(e){
+  alert(e.message);
+ }
 }
-
-
-function statusBangla(status){
-
-  if(status === "pending") return "Pending";
-
-  if(status === "approved") return "Approved";
-
-  if(status === "rejected") return "Rejected";
-
-  return status;
-
-}
-
-
-/* =========================
-   WITHDRAW
-========================= */
 
 function withdrawPage(){
 
-  app.innerHTML = `
+ app.innerHTML=`
+ <div class="card">
 
-    <div class="card">
+  <h2>💳 Withdraw</h2>
 
-      <h2>Withdraw</h2>
+  <p>সর্বনিম্ন ৳1200, সর্বোচ্চ ৳25000</p>
 
-      <p>
-        সর্বনিম্ন ৳1200 এবং সর্বোচ্চ ৳25000
-      </p>
+  <select id="withdrawMethod">
+   <option value="bkash">bKash</option>
+   <option value="nagad">Nagad</option>
+   <option value="rocket">Rocket</option>
+  </select>
 
-      <select id="withdrawMethod">
+  <input id="withdrawNumber"
+  placeholder="Payment number">
 
-        <option value="bkash">
-          bKash
-        </option>
+  <input id="withdrawAmount"
+  type="number"
+  placeholder="Amount">
 
-        <option value="nagad">
-          Nagad
-        </option>
+  <button onclick="sendWithdraw()">
+  Request পাঠান
+  </button>
 
-        <option value="rocket">
-          Rocket
-        </option>
+  <button class="gray" onclick="home()">
+  ← Home
+  </button>
 
-      </select>
-
-      <input
-        id="withdrawNumber"
-        placeholder="বিকাশ / নগদ / রকেট নম্বর"
-      >
-
-      <input
-        id="withdrawAmount"
-        type="number"
-        placeholder="কত টাকা"
-      >
-
-      <button onclick="sendWithdraw()">
-        Withdraw Request
-      </button>
-
-      <button
-        class="gray"
-        onclick="home()"
-      >
-        ← Home
-      </button>
-
-      <div id="withdrawMsg"></div>
-
-    </div>
-  `;
-
+ </div>`;
 }
-
 
 async function sendWithdraw(){
 
-  try{
+ try{
 
-    await api("/api/withdraw",{
+  await api("/api/withdraw",{
+   method:"POST",
+   body:JSON.stringify({
+    method:withdrawMethod.value,
+    number:withdrawNumber.value,
+    amount:Number(withdrawAmount.value)
+   })
+  });
 
-      method:"POST",
+  alert("Withdraw Request পাঠানো হয়েছে");
 
-      body:JSON.stringify({
+  home();
 
-        method:
-          document.getElementById(
-            "withdrawMethod"
-          ).value,
-
-        number:
-          document.getElementById(
-            "withdrawNumber"
-          ).value,
-
-        amount:Number(
-          document.getElementById(
-            "withdrawAmount"
-          ).value
-        )
-
-      })
-
-    });
-
-    alert(
-      "Withdraw request Admin-এর কাছে পাঠানো হয়েছে।"
-    );
-
-    home();
-
-  }catch(e){
-
-    document.getElementById(
-      "withdrawMsg"
-    ).textContent = e.message;
-
-  }
-
+ }catch(e){
+  alert(e.message);
+ }
 }
 
+async function messagesPage(){
 
-/* =========================
-   ADMIN LOGIN
-========================= */
+ try{
+
+  const d=await api("/api/messages");
+
+  app.innerHTML=`
+  <div class="card">
+
+   <h2>💬 Admin-এর সাথে কথা বলুন</h2>
+
+   <div class="chat">
+
+   ${
+    d.messages.length
+    ?
+    d.messages.map(m=>`
+    <div class="msg ${m.sender}">
+
+     <b>
+     ${m.sender==="admin"?"Admin":"আপনি"}:
+     </b>
+
+     ${esc(m.body)}
+
+     <div class="small">
+     ${new Date(m.created_at).toLocaleString("bn-BD")}
+     </div>
+
+    </div>`).join("")
+    :
+    "<p>এখনও কোনো মেসেজ নেই।</p>"
+   }
+
+   </div>
+
+   <textarea
+   id="msgBody"
+   maxlength="2000"
+   placeholder="আপনার মেসেজ লিখুন...">
+   </textarea>
+
+   <button onclick="sendMessage()">
+   📤 Send
+   </button>
+
+   <button class="gray" onclick="home()">
+   ← Home
+   </button>
+
+  </div>`;
+
+ }catch(e){
+  alert(e.message);
+ }
+}
+
+async function sendMessage(){
+
+ try{
+
+  if(!msgBody.value.trim())return;
+
+  await api("/api/messages",{
+   method:"POST",
+   body:JSON.stringify({
+    body:msgBody.value
+   })
+  });
+
+  messagesPage();
+
+ }catch(e){
+  alert(e.message);
+ }
+}
 
 function adminLogin(){
 
-  app.innerHTML = `
+ app.innerHTML=`
+ <div class="card">
 
-    <div class="card">
+  <h2>⚙️ Admin Login</h2>
 
-      <h2>Admin Login</h2>
+  <input id="adminPassword"
+  type="password"
+  placeholder="Admin Password">
 
-      <input
-        id="adminPassword"
-        type="password"
-        placeholder="Admin Password"
-      >
+  <button onclick="doAdminLogin()">
+  Login
+  </button>
 
-      <button onclick="doAdminLogin()">
-        Login
-      </button>
+  <button class="gray" onclick="home()">
+  ← Home
+  </button>
 
-      <button
-        class="gray"
-        onclick="home()"
-      >
-        ← Home
-      </button>
+  <div id="adminMsg"></div>
 
-      <div id="adminLoginMsg"></div>
-
-    </div>
-  `;
-
+ </div>`;
 }
-
 
 async function doAdminLogin(){
 
-  try{
+ try{
 
-    await api("/api/admin/login",{
+  await api("/api/admin/login",{
+   method:"POST",
+   body:JSON.stringify({
+    password:adminPassword.value
+   })
+  });
 
-      method:"POST",
+  adminPanel("dashboard");
 
-      body:JSON.stringify({
-
-        password:
-          document.getElementById(
-            "adminPassword"
-          ).value
-
-      })
-
-    });
-
-    adminPanel();
-
-  }catch(e){
-
-    document.getElementById(
-      "adminLoginMsg"
-    ).textContent = e.message;
-
-  }
-
+ }catch(e){
+  adminMsg.textContent=e.message;
+ }
 }
 
+async function adminPanel(tab="dashboard"){
 
-/* =========================
-   ADMIN PANEL
-========================= */
+ try{
 
-async function adminPanel(){
+  const d=await api("/api/admin/data");
 
-  try{
+  let h=`
+  <div class="card">
 
-    const data =
-      await api("/api/admin/data");
+   <h2>⚙️ Admin Panel</h2>
 
-    let html = `
+   <div class="tabs">
 
-      <div class="card">
+   ${
+    ["dashboard","tasks","submissions","messages","withdrawals","users","logs"]
+    .map(x=>`
 
-        <h2>⚙️ Admin Panel</h2>
+    <button
+    class="${tab===x?"tabActive":""}"
+    onclick="adminPanel('${x}')">
 
-        <button onclick="addTaskPage()">
-          ➕ নতুন কাজ দিন
-        </button>
+    ${
+     ({
+      dashboard:"📊 Dashboard",
+      tasks:"📌 Tasks",
+      submissions:"📷 Submissions",
+      messages:"💬 Messages",
+      withdrawals:"💳 Withdraw",
+      users:"👥 Users",
+      logs:"📜 Logs"
+     })[x]
+    }
+
+    </button>
+
+    `).join("")
+   }
+
+   </div>`;
+
+  if(tab==="dashboard")
+
+   h+=`
+   <div class="adminBox">
+
+    <p>Users: <b>${d.users.length}</b></p>
+
+    <p>Tasks: <b>${d.tasks.length}</b></p>
+
+    <p>
+    Pending Submission:
+    <b>
+    ${d.submissions.filter(x=>x.status==="pending").length}
+    </b>
+    </p>
+
+    <p>
+    Pending Withdraw:
+    <b>
+    ${d.withdrawals.filter(x=>x.status==="pending").length}
+    </b>
+    </p>
+
+    <p>
+    Unread User Messages:
+    <b>${d.unreadMessages}</b>
+    </p>
+
+   </div>`;
+
+  if(tab==="tasks")
+
+   h+=`
+   <button onclick="addTaskPage()">
+   ➕ নতুন কাজ
+   </button>
+
+   ${
+    d.tasks.map(t=>`
+
+    <div class="adminBox">
+
+     <span class="tag">
+     ${taskTypeName(t.type)}
+     </span>
+
+     <h3>${esc(t.title)}</h3>
+
+     <p>Reward: ${money(t.reward)}</p>
+
+     <button
+     class="red"
+     onclick="deleteTask(${t.id})">
+     🗑️ Delete
+     </button>
+
+    </div>
+
+    `).join("")
+   }`;
+
+  if(tab==="submissions")
+
+   h+=d.submissions.length
+
+   ?
+
+   d.submissions.map(s=>`
+
+   <div class="adminBox">
+
+    <h3>${esc(s.title)}</h3>
+
+    <p>
+    User: ${esc(s.login)}
+    |
+    Reward: ${money(s.reward)}
+    </p>
+
+    <p class="${s.status}">
+    ${statusBn(s.status)}
+    </p>
+
+    ${
+     s.reference_image
+     ?
+     `<p>Reference:</p>
+     <img class="shot"
+     src="${safeImage(s.reference_image)}">`
+     :""
+    }
+
+    ${
+     [s.screenshot1,s.screenshot2,s.screenshot3,s.screenshot4]
+     .filter(Boolean)
+     .map((x,i)=>`
+
+     <p>Screenshot ${i+1}</p>
+
+     <img class="shot"
+     src="${safeImage(x)}">
+
+     `).join("")
+    }
+
+    ${
+     s.status==="pending"
+     ?
+     `
+     <button class="green"
+     onclick="approveSubmission(${s.id})">
+     Approve
+     </button>
+
+     <button class="red"
+     onclick="rejectSubmission(${s.id})">
+     Reject
+     </button>
+     `
+     :""
+    }
+
+   </div>
+
+   `).join("")
+
+   :
+
+   "<p>কোনো Submission নেই</p>";
+
+  if(tab==="messages")
+
+   h+=`
+   <p>
+   ${d.unreadMessages}টি unread user message
+   </p>
+   `+
+
+   d.users.map(u=>{
+
+    const ms=d.messages.filter(
+     m=>Number(m.user_id)===Number(u.id)
+    );
+
+    return ms.length
+
+    ?
+
+    `
+    <div class="adminBox">
+
+     <h3>${esc(u.login)}</h3>
+
+     <div class="chat">
+
+     ${
+      ms.slice().reverse().map(m=>`
+
+      <div class="msg ${m.sender}">
+
+       <b>
+       ${m.sender==="admin"?"Admin":"User"}:
+       </b>
+
+       ${esc(m.body)}
 
       </div>
 
-      <div class="card">
+      `).join("")
+     }
 
-        <h2>📌 সব কাজ</h2>
-    `;
+     </div>
 
-    if(!data.tasks.length){
+     <textarea
+     id="reply_${u.id}"
+     placeholder="Reply লিখুন">
+     </textarea>
 
-      html += `<p>কোনো কাজ নেই।</p>`;
+     <button onclick="replyUser(${u.id})">
+     Reply
+     </button>
 
+    </div>
+    `
+
+    :"";
+
+   }).join("");
+
+  if(tab==="withdrawals")
+
+   h+=d.withdrawals.map(w=>`
+
+   <div class="adminBox">
+
+    <b>${esc(w.login)}</b>
+
+    <p>
+    ${esc(w.method)}:
+    ${esc(w.payout_number)}
+    </p>
+
+    <p>
+    Amount: ${money(w.amount)}
+    </p>
+
+    <p>
+    Status: ${esc(w.status)}
+    </p>
+
+    ${
+     w.status==="pending"
+     ?
+     `
+     <button
+     class="green"
+     onclick="approveWithdraw(${w.id})">
+     Approve
+     </button>
+
+     <button
+     class="red"
+     onclick="rejectWithdraw(${w.id})">
+     Reject
+     </button>
+     `
+     :""
     }
 
-    for(const task of data.tasks){
+   </div>
 
-      html += `
+   `).join("");
 
-        <div class="adminBox">
+  if(tab==="users")
 
-          <span class="tag">
-            ${taskTypeName(task.type)}
-          </span>
+   h+=d.users.map(u=>`
 
-          <h3>
-            ${escapeHtml(task.title)}
-          </h3>
+   <div class="adminBox">
 
-          <p>
-            Reward:
-            ৳${Number(task.reward).toFixed(2)}
-          </p>
+    <b>${esc(u.login)}</b>
 
-          <p class="small">
-            Link:
-            ${escapeHtml(task.url || "")}
-          </p>
+    <p>
+    Balance: ${money(u.balance)}
+    </p>
 
-          <button
-            class="red"
-            onclick="deleteTask(${task.id})"
-          >
-            🗑️ কাজ Delete
-          </button>
+    <p>
+    Referral: ${esc(u.referral_code)}
+    </p>
 
-        </div>
-      `;
-
+    <p>
+    Referred:
+    ${
+     d.users.filter(
+      x=>Number(x.referred_by)===Number(u.id)
+     ).length
     }
+    জন
+    </p>
 
-    html += `
+    <button
+    class="red"
+    onclick="banUser(${u.id})">
+    ৩ দিনের Ban
+    </button>
 
-      </div>
+   </div>
 
-      <div class="card">
+   `).join("");
 
-        <h2>📷 User Submissions</h2>
-    `;
+  if(tab==="logs")
 
-    if(!data.submissions.length){
+   h+=d.logs.map(l=>`
 
-      html += `<p>এখন কোনো submission নেই।</p>`;
+   <div class="adminBox">
 
-    }
+    <b>${esc(l.action)}</b>
 
-    for(const s of data.submissions){
+    <p>
+    Actor: ${esc(l.actor)}
+    ${l.login?`| User: ${esc(l.login)}`:""}
+    </p>
 
-      html += `
+    <p>${esc(l.details||"")}</p>
 
-        <div class="adminBox">
+    <span class="small">
+    ${new Date(l.created_at).toLocaleString("bn-BD")}
+    </span>
 
-          <h3>
-            ${escapeHtml(s.title)}
-          </h3>
+   </div>
 
-          <p>
-            User:
-            <b>${escapeHtml(s.login)}</b>
-          </p>
+   `).join("");
 
-          <p>
-            Reward:
-            ৳${Number(s.reward).toFixed(2)}
-          </p>
+  h+=`
+  </div>
 
-          <p>
-            Status:
-            <b>${statusBangla(s.status)}</b>
-          </p>
+  <button class="gray" onclick="home()">
+  ← Home
+  </button>`;
 
-          <h4>Screenshot 1</h4>
+  app.innerHTML=h;
 
-          ${
-            s.screenshot1
-            ? `<img class="shot" src="${safeImage(s.screenshot1)}">`
-            : `<p>নেই</p>`
-          }
-
-          ${
-            s.type === "youtube"
-            ? `
-
-              <h4>Screenshot 2</h4>
-              ${
-                s.screenshot2
-                ? `<img class="shot" src="${safeImage(s.screenshot2)}">`
-                : `<p>নেই</p>`
-              }
-
-              <h4>Screenshot 3</h4>
-              ${
-                s.screenshot3
-                ? `<img class="shot" src="${safeImage(s.screenshot3)}">`
-                : `<p>নেই</p>`
-              }
-
-              <h4>Screenshot 4</h4>
-              ${
-                s.screenshot4
-                ? `<img class="shot" src="${safeImage(s.screenshot4)}">`
-                : `<p>নেই</p>`
-              }
-
-            `
-            : ""
-          }
-
-          ${
-            s.status === "pending"
-            ? `
-
-              <button
-                class="green"
-                onclick="approveSubmission(${s.id})"
-              >
-                ✅ Approve
-              </button>
-
-              <button
-                class="red"
-                onclick="rejectSubmission(${s.id})"
-              >
-                ❌ Reject
-              </button>
-
-            `
-            : ""
-          }
-
-        </div>
-      `;
-
-    }
-
-    html += `
-
-      </div>
-
-      <div class="card">
-
-        <h2>👥 Users</h2>
-    `;
-
-    for(const u of data.users){
-
-      html += `
-
-        <div class="adminBox">
-
-          <b>
-            ${escapeHtml(u.login)}
-          </b>
-
-          <p>
-            Balance:
-            ৳${Number(u.balance).toFixed(2)}
-          </p>
-
-          <button
-            class="red"
-            onclick="banUser(${u.id})"
-          >
-            ৩ দিনের জন্য Ban
-          </button>
-
-        </div>
-      `;
-
-    }
-
-    html += `
-
-      </div>
-
-      <div class="card">
-
-        <h2>💳 Withdrawals</h2>
-    `;
-
-    for(const w of data.withdrawals){
-
-      html += `
-
-        <div class="adminBox">
-
-          <p>
-            #${w.id}
-          </p>
-
-          <p>
-            Method:
-            ${escapeHtml(w.method)}
-          </p>
-
-          <p>
-            Number:
-            ${escapeHtml(w.payout_number)}
-          </p>
-
-          <p>
-            Amount:
-            ৳${Number(w.amount).toFixed(2)}
-          </p>
-
-          <p>
-            Status:
-            <b>${escapeHtml(w.status)}</b>
-          </p>
-
-          ${
-            w.status === "pending"
-            ? `
-
-              <button
-                class="green"
-                onclick="approveWithdraw(${w.id})"
-              >
-                Approve
-              </button>
-
-              <button
-                class="red"
-                onclick="rejectWithdraw(${w.id})"
-              >
-                Reject
-              </button>
-
-            `
-            : ""
-          }
-
-        </div>
-      `;
-
-    }
-
-    html += `
-
-      </div>
-
-      <button
-        class="gray"
-        onclick="home()"
-      >
-        ← Home
-      </button>
-    `;
-
-    app.innerHTML = html;
-
-  }catch(e){
-
-    alert(e.message);
-    home();
-
-  }
-
+ }catch(e){
+  alert(e.message);
+ }
 }
-
-
-/* =========================
-   ADD TASK PAGE
-========================= */
 
 function addTaskPage(){
 
-  app.innerHTML = `
+ app.innerHTML=`
+ <div class="card">
 
-    <div class="card">
+  <h2>➕ নতুন কাজ</h2>
 
-      <h2>➕ নতুন কাজ দিন</h2>
+  <select id="taskType"
+  onchange="taskTypeChanged()">
 
-      <label>কাজের ধরন</label>
+   <option value="ad">
+   Ad দেখা
+   </option>
 
-      <select id="taskType" onchange="taskTypeChanged()">
+   <option value="facebook">
+   Facebook Like + Screenshot
+   </option>
 
-        <option value="ad">
-          Ad দেখা
-        </option>
+   <option value="youtube">
+   YouTube + ৪ Screenshot
+   </option>
 
-        <option value="facebook">
-          Facebook Like + Screenshot
-        </option>
+  </select>
 
-        <option value="youtube">
-          YouTube + ৪ Screenshot
-        </option>
+  <input id="taskTitle"
+  placeholder="Title">
 
-      </select>
+  <textarea id="taskDescription"
+  placeholder="নির্দেশনা">
+  </textarea>
 
-      <input
-        id="taskTitle"
-        placeholder="কাজের Title"
-      >
+  <input id="taskUrl"
+  placeholder="URL">
 
-      <textarea
-        id="taskDescription"
-        placeholder="কাজের বিস্তারিত নির্দেশনা"
-      ></textarea>
+  <input id="taskReward"
+  type="number"
+  step=".01"
+  placeholder="Reward">
 
-      <input
-        id="taskUrl"
-        placeholder="Ad / Facebook / YouTube Link"
-      >
+  <div id="secondsBox">
 
-      <input
-        id="taskReward"
-        type="number"
-        step="0.01"
-        placeholder="Reward টাকা"
-      >
+   <input id="taskSeconds"
+   type="number"
+   min="1"
+   value="15"
+   placeholder="Seconds">
 
-      <div id="secondsBox">
+  </div>
 
-        <input
-          id="taskSeconds"
-          type="number"
-          value="15"
-          min="1"
-          placeholder="কত সেকেন্ড Ad দেখতে হবে"
-        >
+  <div id="referenceBox"
+  class="hidden">
 
-      </div>
+   <p>Reference Screenshot</p>
 
-      <div id="referenceBox" class="hidden">
+   <input id="referenceFile"
+   type="file"
+   accept="image/*">
 
-        <p>
-          কাজের Reference Screenshot
-        </p>
+  </div>
 
-        <input
-          id="referenceFile"
-          type="file"
-          accept="image/*"
-        >
+  <button onclick="createTask()">
+  Publish
+  </button>
 
-      </div>
+  <button class="gray"
+  onclick="adminPanel('tasks')">
+  ← Admin
+  </button>
 
-      <button
-        onclick="createTask()"
-      >
-        ✅ কাজ Publish করুন
-      </button>
-
-      <button
-        class="gray"
-        onclick="adminPanel()"
-      >
-        ← Admin Panel
-      </button>
-
-    </div>
-  `;
-
+ </div>`;
 }
-
 
 function taskTypeChanged(){
 
-  const type =
-    document.getElementById("taskType").value;
+ const a=taskType.value==="ad";
 
-  const referenceBox =
-    document.getElementById("referenceBox");
+ secondsBox.classList.toggle("hidden",!a);
 
-  const secondsBox =
-    document.getElementById("secondsBox");
-
-  if(type === "ad"){
-
-    referenceBox.classList.add("hidden");
-    secondsBox.classList.remove("hidden");
-
-  }else{
-
-    referenceBox.classList.remove("hidden");
-    secondsBox.classList.add("hidden");
-
-  }
-
+ referenceBox.classList.toggle("hidden",a);
 }
-
-
-/* =========================
-   CREATE TASK
-========================= */
 
 async function createTask(){
 
-  try{
+ try{
 
-    const type =
-      document.getElementById("taskType").value;
+  let ref="";
 
-    const title =
-      document.getElementById("taskTitle").value;
+  if(taskType.value!=="ad"){
 
-    const description =
-      document.getElementById("taskDescription").value;
+   const f=referenceFile.files[0];
 
-    const url =
-      document.getElementById("taskUrl").value;
+   if(!f)
+   return alert("Reference Screenshot দিন");
 
-    const reward =
-      Number(
-        document.getElementById("taskReward").value
-      );
-
-    let referenceImage = "";
-
-    if(type !== "ad"){
-
-      const file =
-        document.getElementById("referenceFile").files[0];
-
-      if(!file){
-
-        alert(
-          "Reference Screenshot দিন"
-        );
-
-        return;
-
-      }
-
-      referenceImage =
-        await fileToBase64(file);
-
-    }
-
-    await api("/api/admin/tasks",{
-
-      method:"POST",
-
-      body:JSON.stringify({
-
-        type,
-        title,
-        description,
-        url,
-        referenceImage,
-        reward,
-
-        minSeconds:
-          type === "ad"
-          ? Number(
-              document.getElementById(
-                "taskSeconds"
-              ).value
-            )
-          : 15
-
-      })
-
-    });
-
-    alert("কাজ সফলভাবে Publish হয়েছে");
-
-    adminPanel();
-
-  }catch(e){
-
-    alert(e.message);
-
+   ref=await file64(f);
   }
 
+  await api("/api/admin/tasks",{
+   method:"POST",
+   body:JSON.stringify({
+    type:taskType.value,
+    title:taskTitle.value,
+    description:taskDescription.value,
+    url:taskUrl.value,
+    reward:Number(taskReward.value),
+    minSeconds:Number(taskSeconds.value),
+    referenceImage:ref
+   })
+  });
+
+  alert("Task Publish হয়েছে");
+
+  adminPanel("tasks");
+
+ }catch(e){
+  alert(e.message);
+ }
 }
-
-
-/* =========================
-   DELETE TASK
-========================= */
 
 async function deleteTask(id){
 
-  if(!confirm(
-    "এই কাজটি Delete করতে চান?"
-  )) return;
+ if(!confirm("Delete করবেন?"))
+ return;
 
-  try{
+ try{
 
-    await api(
-      "/api/admin/tasks/" + id,
-      {
-        method:"DELETE"
-      }
-    );
+  await api("/api/admin/tasks/"+id,{
+   method:"DELETE"
+  });
 
-    alert("কাজ Delete হয়েছে");
+  adminPanel("tasks");
 
-    adminPanel();
-
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
+ }catch(e){
+  alert(e.message);
+ }
 }
-
-
-/* =========================
-   APPROVE
-========================= */
 
 async function approveSubmission(id){
 
-  if(!confirm(
-    "Screenshot দেখে নিশ্চিত হয়ে Approve করবেন?"
-  )) return;
+ try{
 
-  try{
+  await api("/api/admin/submissions/"+id+"/approve",{
+   method:"POST"
+  });
 
-    await api(
-      "/api/admin/submissions/" +
-      id +
-      "/approve",
-      {
-        method:"POST"
-      }
-    );
+  adminPanel("submissions");
 
-    alert("Approved");
-
-    adminPanel();
-
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
+ }catch(e){
+  alert(e.message);
+ }
 }
-
-
-/* =========================
-   REJECT
-========================= */
 
 async function rejectSubmission(id){
 
-  if(!confirm(
-    "এই কাজ Reject করবেন?"
-  )) return;
+ try{
 
-  try{
+  await api("/api/admin/submissions/"+id+"/reject",{
+   method:"POST"
+  });
 
-    await api(
-      "/api/admin/submissions/" +
-      id +
-      "/reject",
-      {
-        method:"POST"
-      }
-    );
+  adminPanel("submissions");
 
-    alert("Rejected");
-
-    adminPanel();
-
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
+ }catch(e){
+  alert(e.message);
+ }
 }
 
+async function replyUser(id){
 
-/* =========================
-   BAN
-========================= */
+ try{
 
-async function banUser(id){
+  const el=document.getElementById("reply_"+id);
 
-  if(!confirm(
-    "User-কে ৩ দিনের জন্য Ban করবেন?"
-  )) return;
+  if(!el.value.trim())
+  return;
 
-  try{
+  await api("/api/admin/messages/"+id,{
+   method:"POST",
+   body:JSON.stringify({
+    body:el.value
+   })
+  });
 
-    await api(
-      "/api/admin/users/" +
-      id +
-      "/ban",
-      {
-        method:"POST"
-      }
-    );
+  adminPanel("messages");
 
-    alert("User Ban হয়েছে");
-
-    adminPanel();
-
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
+ }catch(e){
+  alert(e.message);
+ }
 }
-
-
-/* =========================
-   WITHDRAW APPROVE
-========================= */
 
 async function approveWithdraw(id){
 
-  try{
+ try{
 
-    await api(
-      "/api/admin/withdrawals/" +
-      id +
-      "/approve",
-      {
-        method:"POST"
-      }
-    );
+  await api("/api/admin/withdrawals/"+id+"/approve",{
+   method:"POST"
+  });
 
-    adminPanel();
+  adminPanel("withdrawals");
 
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
+ }catch(e){
+  alert(e.message);
+ }
 }
-
-
-/* =========================
-   WITHDRAW REJECT
-========================= */
 
 async function rejectWithdraw(id){
 
-  if(!confirm(
-    "Withdraw request Reject করবেন?"
-  )) return;
+ try{
 
-  try{
+  await api("/api/admin/withdrawals/"+id+"/reject",{
+   method:"POST"
+  });
 
-    await api(
-      "/api/admin/withdrawals/" +
-      id +
-      "/reject",
-      {
-        method:"POST"
-      }
-    );
+  adminPanel("withdrawals");
 
-    adminPanel();
-
-  }catch(e){
-
-    alert(e.message);
-
-  }
-
+ }catch(e){
+  alert(e.message);
+ }
 }
 
+async function banUser(id){
 
-/* =========================
-   LOGOUT
-========================= */
+ if(!confirm("৩ দিনের Ban করবেন?"))
+ return;
+
+ try{
+
+  await api("/api/admin/users/"+id+"/ban",{
+   method:"POST"
+  });
+
+  adminPanel("users");
+
+ }catch(e){
+  alert(e.message);
+ }
+}
 
 async function logout(){
 
-  try{
+ try{
+  await api("/api/logout",{method:"POST"});
+ }catch{}
 
-    await api(
-      "/api/logout",
-      {
-        method:"POST"
-      }
-    );
-
-  }catch(e){}
-
-  loginPage();
-
+ loginPage();
 }
-
-
-/* =========================
-   SECURITY HELPERS
-========================= */
-
-function escapeHtml(value){
-
-  return String(value ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-
-}
-
-
-function safeUrl(value){
-
-  const url = String(value || "");
-
-  if(
-    url.startsWith("https://") ||
-    url.startsWith("http://")
-  ){
-
-    return url
-      .replaceAll("'","%27")
-      .replaceAll('"',"%22");
-
-  }
-
-  return "#";
-
-}
-
-
-function safeImage(value){
-
-  const image = String(value || "");
-
-  if(
-    image.startsWith("data:image/")
-  ){
-
-    return image;
-
-  }
-
-  return "";
-
-}
-
-
-/* =========================
-   START
-========================= */
 
 home();
-
 </script>
-
 </body>
   </html>
