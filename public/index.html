@@ -247,13 +247,20 @@ async function startAd(id){
    method:"POST"
   });
 
+  localStorage.setItem("activeAd",JSON.stringify({
+   id:id,
+   token:d.token,
+   seconds:Number(d.seconds),
+   startedAt:Date.now()
+  }));
+
   app.innerHTML=`
   <div class="card">
    <h2>Ad দেখুন</h2>
 
    <p>
-   প্রথমে নিচের বাটনে Ad খুলুন।
-   <b>Ad খুলার পরেই সময় গণনা শুরু হবে।</b>
+   নিচের বাটনে Ad খুলুন।
+   <b>Ad খোলার পর সময় গণনা হবে।</b>
    </p>
 
    <button id="openAdBtn"
@@ -275,6 +282,58 @@ async function startAd(id){
   alert(e.message);
  }
 }
+
+function openAdAndStart(url,seconds,id,token){
+
+ const w=window.open(url,"_blank");
+
+ if(!w){
+  alert("Ad খোলার অনুমতি দিন, তারপর আবার চাপুন");
+  return;
+ }
+
+ document.getElementById("openAdBtn").disabled=true;
+
+ const startedAt=Date.now();
+
+ localStorage.setItem("activeAd",JSON.stringify({
+  id:id,
+  token:token,
+  seconds:Number(seconds),
+  startedAt:startedAt
+ }));
+
+ let timer=document.getElementById("timer");
+ let btn=document.getElementById("completeAdButton");
+
+ function updateTimer(){
+
+  const elapsed=Math.floor(
+   (Date.now()-startedAt)/1000
+  );
+
+  const left=Math.max(
+   0,
+   Number(seconds)-elapsed
+  );
+
+  timer.textContent=
+   left>0
+   ?left+" সেকেন্ড বাকি"
+   :"সময় শেষ";
+
+  if(left<=0){
+   btn.disabled=false;
+   btn.textContent="✅ Reward নিন";
+   btn.onclick=()=>completeAd(id,token);
+   return;
+  }
+
+  setTimeout(updateTimer,1000);
+ }
+
+ updateTimer();
+ }
 
 function openAdAndStart(url,seconds,id,token){
 
