@@ -247,13 +247,6 @@ async function startAd(id){
    method:"POST"
   });
 
-  localStorage.setItem("activeAd",JSON.stringify({
-   id:id,
-   token:d.token,
-   seconds:Number(d.seconds),
-   startedAt:Date.now()
-  }));
-
   app.innerHTML=`
   <div class="card">
    <h2>Ad দেখুন</h2>
@@ -281,7 +274,7 @@ async function startAd(id){
  }catch(e){
   alert(e.message);
  }
-}
+ }
 
 function openAdAndStart(url,seconds,id,token){
 
